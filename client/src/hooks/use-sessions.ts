@@ -1,12 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
 
 export function useSessions() {
   return useQuery({
     queryKey: [api.sessions.list.path],
     queryFn: async () => {
-      const res = await fetch(api.sessions.list.path, { credentials: "include" });
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      const res = await fetch(api.sessions.list.path, {
+        headers: {
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+      });
       if (!res.ok) throw new Error("Failed to fetch sessions");
       return api.sessions.list.responses[200].parse(await res.json());
     },
@@ -20,11 +27,15 @@ export function useCreateSession() {
   return useMutation({
     mutationFn: async (data: { points: Array<{ x: number, y: number, timestamp: number }> }) => {
       const validated = api.sessions.create.input.parse(data);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
       const res = await fetch(api.sessions.create.path, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
         body: JSON.stringify(validated),
-        credentials: "include",
       });
 
       if (!res.ok) {

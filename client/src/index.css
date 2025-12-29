@@ -11,30 +11,36 @@
   /* Medical/Health Theme - Clean, Trustworthy, Calming */
   --background: 210 20% 98%;
   --foreground: 222 47% 11%;
-  
+
   /* Primary: Trustworthy Teal/Blue */
   --primary: 188 86% 38%;
   --primary-foreground: 210 40% 98%;
-  
+
   /* Secondary: Soft Slate */
   --secondary: 210 40% 96%;
   --secondary-foreground: 222 47% 11%;
-  
+
   /* Muted backgrounds */
   --muted: 210 40% 96%;
   --muted-foreground: 215 16% 47%;
-  
+
   /* Accent: Warm Orange/Coral for engagement */
   --accent: 25 95% 58%;
   --accent-foreground: 210 40% 98%;
-  
+
   --destructive: 0 84% 60%;
   --destructive-foreground: 210 40% 98%;
-  
+
   --border: 214 32% 91%;
   --input: 214 32% 91%;
   --ring: 188 86% 38%;
-  
+
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+
   --radius: 1rem;
 }
 
@@ -44,7 +50,12 @@
     font-family: var(--font-body);
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     @apply font-bold tracking-tight text-foreground;
   }
@@ -54,12 +65,12 @@
   .text-balance {
     text-wrap: balance;
   }
-  
+
   /* Premium card effect */
   .glass-panel {
     @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl shadow-black/5;
   }
-  
+
   .card-hover {
     @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
   }
@@ -70,9 +81,11 @@
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/40 transition-colors;
 }

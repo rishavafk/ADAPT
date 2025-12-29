@@ -12,6 +12,13 @@ import Dashboard from "@/pages/Dashboard";
 import Analysis from "@/pages/Analysis";
 import Medications from "@/pages/Medications";
 import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import AuthCallback from "@/pages/AuthCallback";
+import Landing from "@/pages/Landing";
+import Report from "@/pages/Report";
+import FingerTapping from "@/pages/FingerTapping";
+import Settings from "@/pages/Settings";
+import SpeechTraining from "@/pages/SpeechTraining";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useAuth();
@@ -26,8 +33,8 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   }
 
   if (!user) {
-    // We render Login here instead of redirecting to avoid flash
-    return <Login />;
+    setLocation("/login");
+    return null;
   }
 
   return <Component />;
@@ -36,10 +43,17 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={() => <ProtectedRoute component={Dashboard} />} />
+      <Route path="/" component={Landing} />
+      <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
       <Route path="/analysis" component={() => <ProtectedRoute component={Analysis} />} />
       <Route path="/medications" component={() => <ProtectedRoute component={Medications} />} />
+      <Route path="/report" component={() => <ProtectedRoute component={Report} />} />
+      <Route path="/finger-tapping" component={() => <ProtectedRoute component={FingerTapping} />} />
+      <Route path="/speech-training" component={() => <ProtectedRoute component={SpeechTraining} />} />
+      <Route path="/settings" component={() => <ProtectedRoute component={Settings} />} />
       <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
+      <Route path="/auth/callback" component={AuthCallback} />
       <Route component={NotFound} />
     </Switch>
   );

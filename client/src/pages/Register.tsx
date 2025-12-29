@@ -8,43 +8,28 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 
-export default function Login() {
+export default function Register() {
   const [, setLocation] = useLocation();
-  const { login, isLoggingIn, resendConfirmation, isResendingConfirmation } = useAuth();
+  const { register, isRegistering } = useAuth();
   const { toast } = useToast();
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [needsConfirmation, setNeedsConfirmation] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    setNeedsConfirmation(false);
-    login(
-      { email, password },
+    register(
+      { email, password, firstName, lastName },
       {
-        onSuccess: () => setLocation("/dashboard"),
-        onError: (error) => {
-          const message = (error as Error).message;
-          if (/confirm(ed)?/i.test(message) && /email/i.test(message)) {
-            setNeedsConfirmation(true);
-          }
-          toast({
-            title: "Login failed",
-            description: message,
-            variant: "destructive",
-          });
+        onSuccess: () => {
+          toast({ title: "Account created", description: "Welcome to ADAPT." });
+          setLocation("/login");
         },
-      },
-    );
-  };
-
-  const handleResend = () => {
-    if (!email) return;
-    resendConfirmation(
-      { email },
-      {
-        onSuccess: () => toast({ title: "Email sent", description: "Check your inbox." }),
-        onError: (error) => toast({ title: "Error", description: (error as Error).message, variant: "destructive" }),
+        onError: (error) => {
+          toast({ title: "Registration failed", description: (error as Error).message, variant: "destructive" });
+        },
       },
     );
   };
@@ -72,7 +57,7 @@ export default function Login() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md relative z-10 px-6"
+        className="w-full max-w-lg relative z-10 px-6 py-10"
       >
         <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl">
 
@@ -92,10 +77,33 @@ export default function Login() {
             </a>
           </Link>
 
-          <h1 className="text-3xl font-display font-bold text-white mb-2">Welcome Back</h1>
-          <p className="text-slate-400 mb-8">Sign in to access your tremor analytics.</p>
+          <h1 className="text-3xl font-display font-bold text-white mb-2">Create Account</h1>
+          <p className="text-slate-400 mb-8">Join thousands of patients taking back control.</p>
 
-          <form onSubmit={handleLogin} className="space-y-5">
+          <form onSubmit={handleRegister} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName" className="text-slate-300">First Name</Label>
+                <Input
+                  id="firstName"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="bg-slate-800/50 border-white/10 text-white focus:border-cyan-500 focus:ring-cyan-500/20 h-12"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName" className="text-slate-300">Last Name</Label>
+                <Input
+                  id="lastName"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="bg-slate-800/50 border-white/10 text-white focus:border-cyan-500 focus:ring-cyan-500/20 h-12"
+                  required
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="email" className="text-slate-300">Email</Label>
               <Input
@@ -123,30 +131,18 @@ export default function Login() {
 
             <Button
               type="submit"
-              className="w-full h-12 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold rounded-xl transition-all shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40"
-              disabled={isLoggingIn}
+              className="w-full h-12 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold rounded-xl transition-all shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 mt-4"
+              disabled={isRegistering}
             >
-              {isLoggingIn ? "Signing in..." : "Sign In"}
+              {isRegistering ? "Creating..." : "Create Account"}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
-
-            {needsConfirmation && (
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full border-white/10 text-slate-300 hover:bg-slate-800 hover:text-white"
-                onClick={handleResend}
-                disabled={isResendingConfirmation || !email}
-              >
-                {isResendingConfirmation ? "Resending..." : "Resend confirmation email"}
-              </Button>
-            )}
           </form>
 
           <div className="mt-8 pt-8 border-t border-white/10 text-center text-sm text-slate-400">
-            Don't have an account?{" "}
-            <Link href="/register">
-              <a className="text-cyan-400 font-bold hover:underline">Get started</a>
+            Already have an account?{" "}
+            <Link href="/login">
+              <a className="text-cyan-400 font-bold hover:underline">Log in</a>
             </Link>
           </div>
         </div>

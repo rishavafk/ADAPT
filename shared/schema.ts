@@ -1,10 +1,6 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb, doublePrecision } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { pgTable, text, serial, timestamp, jsonb, doublePrecision } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-
-export * from "./models/auth";
-import { users } from "./models/auth";
 
 // === TABLE DEFINITIONS ===
 
@@ -28,6 +24,30 @@ export const medicationLogs = pgTable("medication_logs", {
   timeTaken: timestamp("time_taken").defaultNow().notNull(),
 });
 
+export const fingerTappingSessions = pgTable("finger_tapping_sessions", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  hand: text("hand").notNull(), // "left" | "right"
+  avgInterval: doublePrecision("avg_interval"),
+  stdDev: doublePrecision("std_dev"),
+  tapsPerSecond: doublePrecision("taps_per_second"),
+  regularityScore: doublePrecision("regularity_score"),
+  asymmetryScore: doublePrecision("asymmetry_score"),
+  rhythmStability: doublePrecision("rhythm_stability"),
+  totalTaps: doublePrecision("total_taps").notNull(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+});
+
+export const userSettings = pgTable("user_settings", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().unique(),
+  openaiApiKey: text("openai_api_key"),
+  googleAiApiKey: text("google_ai_api_key"),
+  aiProvider: text("ai_provider", { enum: ["openai", "google"] }).default("openai"),
+  aiEnabled: text("ai_enabled", { enum: ["true", "false"] }).default("false"),
+  customPrompt: text("custom_prompt"),
+});
+
 // === RELATIONS ===
 // (Optional: define relations if using drizzle query builder with relations)
 
@@ -47,6 +67,15 @@ export const insertMedicationLogSchema = createInsertSchema(medicationLogs).omit
   // timeTaken is optional in input, defaults to now if not provided, but we might want to allow backdating
 });
 
+export const insertFingerTappingSessionSchema = createInsertSchema(fingerTappingSessions).omit({ 
+  id: true,
+  timestamp: true,
+});
+
+export const insertUserSettingsSchema = createInsertSchema(userSettings).omit({ 
+  id: true,
+});
+
 // === EXPLICIT API CONTRACT TYPES ===
 
 export type HandwritingSession = typeof handwritingSessions.$inferSelect;
@@ -54,6 +83,12 @@ export type InsertHandwritingSession = z.infer<typeof insertHandwritingSessionSc
 
 export type MedicationLog = typeof medicationLogs.$inferSelect;
 export type InsertMedicationLog = z.infer<typeof insertMedicationLogSchema>;
+
+export type FingerTappingSession = typeof fingerTappingSessions.$inferSelect;
+export type InsertFingerTappingSession = z.infer<typeof insertFingerTappingSessionSchema>;
+
+export type UserSettings = typeof userSettings.$inferSelect;
+export type InsertUserSettings = z.infer<typeof insertUserSettingsSchema>;
 
 // Request types
 export type CreateSessionRequest = {
@@ -64,6 +99,17 @@ export type CreateMedicationLogRequest = {
   medicationName: string;
   dosage?: string;
   timeTaken?: string; // ISO string
+};
+
+export type CreateFingerTappingSessionRequest = {
+  hand: "left" | "right";
+  avgInterval: number;
+  stdDev: number;
+  tapsPerSecond: number;
+  regularityScore: number;
+  asymmetryScore: number;
+  rhythmStability: number;
+  totalTaps: number;
 };
 
 // Response types
