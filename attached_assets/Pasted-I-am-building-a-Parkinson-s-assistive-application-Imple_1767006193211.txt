@@ -1,0 +1,98 @@
+I am building a Parkinson’s assistive application.
+
+Implement a combined analysis module that:
+1. Analyzes handwriting tremor data
+2. Uses the tremor results to track medication effectiveness over time
+3. Outputs dashboard-ready insights showing how medication is performing
+
+--------------------------------------------------
+PART 1: HANDWRITING TREMOR ANALYSIS
+--------------------------------------------------
+
+Input:
+- handwritingSamples: an array of handwriting sessions
+- Each session has:
+  {
+    points: Array<{ x: number, y: number, timestamp: number }>,
+    timestamp: number
+  }
+
+Requirements:
+1. Compute tremor amplitude from small involuntary deviations.
+2. Compute stroke jitter using standard deviation of movement.
+3. Estimate tremor frequency in a basic, explainable way.
+4. Produce a normalized tremor severity score from 0 to 10.
+5. Classify tremor state as: "Stable", "Moderate", or "Severe".
+
+Output per session:
+{
+  timestamp: number,
+  tremorAmplitude: number,
+  jitter: number,
+  estimatedFrequency: number,
+  severityScore: number,
+  tremorState: "Stable" | "Moderate" | "Severe"
+}
+
+--------------------------------------------------
+PART 2: MEDICATION EFFECT TRACKING
+--------------------------------------------------
+
+Input:
+- medicationLogs: Array<{
+    medicationName: string,
+    dosage?: string,
+    timeTaken: number
+  }>
+
+- tremorAnalysisResults (output from Part 1)
+
+Requirements:
+1. Correlate tremor severity scores with medication timing.
+2. Detect whether tremor severity improves, stabilizes, or worsens after medication.
+3. Identify likely medication states:
+   - "ON" (symptoms improving)
+   - "WEARING_OFF"
+   - "OFF" (symptoms worsening)
+4. Detect time-to-effect and time-to-wear-off patterns.
+5. Keep logic deterministic and explainable (no ML).
+
+--------------------------------------------------
+PART 3: DASHBOARD TREND OUTPUT
+--------------------------------------------------
+
+Produce a final output object suitable for a dashboard:
+
+{
+  currentMedicationState: "ON" | "WEARING_OFF" | "OFF",
+  timeSinceLastDoseMinutes: number,
+  tremorTrend: "Improving" | "Stable" | "Worsening",
+  averageTremorScore: number,
+  bestPostMedicationScore: number,
+  medicationEffectivenessScore: number, // 0–100
+  insight: string,
+  trendTimeline: Array<{
+    timestamp: number,
+    tremorScore: number,
+    medicationState: string
+  }>
+}
+
+--------------------------------------------------
+CONSTRAINTS
+--------------------------------------------------
+- Use JavaScript or TypeScript
+- No external libraries
+- No machine learning
+- Keep math simple and explainable
+- Focus on demo realism, not medical diagnosis
+- Code should be modular and readable
+
+--------------------------------------------------
+GOAL
+--------------------------------------------------
+The output should clearly show:
+- How handwriting tremor changes over time
+- How medication impacts tremor severity
+- Whether the medication is currently effective
+- A clear, human-readable insight for the dashboard
