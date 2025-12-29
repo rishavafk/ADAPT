@@ -1,38 +1,80 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { db } from "./db";
+import {
+  handwritingSessions,
+  medicationLogs,
+  type HandwritingSession,
+  type InsertHandwritingSession,
+  type MedicationLog,
+  type InsertMedicationLog,
+} from "@shared/schema";
+import { eq, desc } from "drizzle-orm";
+import { authStorage, IAuthStorage } from "./replit_integrations/auth/storage";
 
-// modify the interface with any CRUD methods
-// you might need
-
-export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+export interface IStorage extends IAuthStorage {
+  // Handwriting Sessions
+  createSession(session: InsertHandwritingSession & { 
+    tremorAmplitude: number, 
+    jitter: number, 
+    estimatedFrequency: number, 
+    severityScore: number, 
+    tremorState: string 
+  }): Promise<HandwritingSession>;
+  getSessions(userId: string): Promise<HandwritingSession[]>;
+  
+  // Medication Logs
+  createMedicationLog(log: InsertMedicationLog): Promise<MedicationLog>;
+  getMedicationLogs(userId: string): Promise<MedicationLog[]>;
+  getLastMedication(userId: string): Promise<MedicationLog | undefined>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
+export class DatabaseStorage extends (authStorage.constructor as { new (): IAuthStorage }) implements IStorage {
+  async createSession(session: InsertHandwritingSession & { 
+    tremorAmplitude: number, 
+    jitter: number, 
+    estimatedFrequency: number, 
+    severityScore: number, 
+    tremorState: string 
+  }): Promise<HandwritingSession> {
+    const [newSession] = await db
+      .insert(handwritingSessions)
+      .values(session)
+      .returning();
+    return newSession;
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async getSessions(userId: string): Promise<HandwritingSession[]> {
+    return await db
+      .select()
+      .from(handwritingSessions)
+      .where(eq(handwritingSessions.userId, userId))
+      .orderBy(desc(handwritingSessions.timestamp));
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async createMedicationLog(log: InsertMedicationLog): Promise<MedicationLog> {
+    const [newLog] = await db
+      .insert(medicationLogs)
+      .values(log)
+      .returning();
+    return newLog;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async getMedicationLogs(userId: string): Promise<MedicationLog[]> {
+    return await db
+      .select()
+      .from(medicationLogs)
+      .where(eq(medicationLogs.userId, userId))
+      .orderBy(desc(medicationLogs.timeTaken));
+  }
+
+  async getLastMedication(userId: string): Promise<MedicationLog | undefined> {
+    const [log] = await db
+      .select()
+      .from(medicationLogs)
+      .where(eq(medicationLogs.userId, userId))
+      .orderBy(desc(medicationLogs.timeTaken))
+      .limit(1);
+    return log;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
