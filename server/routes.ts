@@ -91,6 +91,11 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // --- PUBLIC ROUTES ---
+  app.get("/api/health", (_req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
   app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
     res.json({
       id: req.user?.claims?.sub,
