@@ -3,7 +3,6 @@ import { registerRoutes } from "./routes";
 import { createServer } from "http";
 
 const app = express();
-const httpServer = createServer(app);
 
 app.use(
     express.json({
@@ -16,11 +15,19 @@ app.use(
 
 app.use(express.urlencoded({ extended: false, limit: "50mb" }));
 
-// This function sets up the app but doesn't listen
-// We need to await registerRoutes because it might be async
+// For serverless (Netlify/Vercel) - just setup routes without HTTP server
 export async function setupApp() {
+    // Create a minimal server just for registerRoutes compatibility
+    const httpServer = createServer(app);
     await registerRoutes(httpServer, app);
     return app;
 }
 
-export { app, httpServer };
+// For traditional server (local dev)
+export async function setupAppWithServer() {
+    const httpServer = createServer(app);
+    await registerRoutes(httpServer, app);
+    return { app, httpServer };
+}
+
+export { app };

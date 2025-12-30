@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { serveStatic } from "./static";
-import { app, httpServer, setupApp } from "./app";
+import { setupAppWithServer } from "./app";
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -44,7 +44,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  await setupApp();
+  const { app, httpServer } = await setupAppWithServer();
 
   app.use((err: any, _req: any, res: any, _next: any) => {
     const status = err.status || err.statusCode || 500;
